@@ -7,7 +7,7 @@ var crypto = require('crypto'),
 module.exports = function(app){
 
 	app.get('/',function(req,res){
-		Post.get(null,function(err,posts){
+		Post.getAll(null,function(err,posts){
 			//	从数据库中读取所有信息
 
 			res.render('index',{
@@ -18,7 +18,6 @@ module.exports = function(app){
 				'error':req.flash('error').toString()
 			});			
 		});
-
 	});
 	//	首页请求
 
@@ -170,27 +169,83 @@ module.exports = function(app){
 
 	app.post('/upload',_checkLogin);
 	app.post('/upload',function(req,res){
-
 		for(var i in req.files){
+			//	遍历上传的文件序列
+			
 			var curFile = req.files[i];
+			//	获取当前文件
+
 			if(curFile.size == 0){
 				fs.unlinkSync(curFile.path);
-				console.log("删除文件" + curFile.name + "成功");
 			}
 			//	同步方法删除一个文件
-		
 			else{
 				var tPath = './public/upload/' + curFile.name;
 				fs.renameSync(curFile.path,tPath);
-				console.log(curFile);
-				console.log('文件' + curFile.name + '上传成功!');
 			}
 
-			console.log('文件上传完成');
-			res.redirect('/upload');
+			return res.redirect('/upload');
+			//	文件上传完成,重定向到上传页面
 		}
 	});
 	//	上传文件,还有点问题
+
+	app.get('/u/:name',function(req,res){
+		//	检测用户名是否存在
+	
+		User.get(req.params.name,function(err,user){
+			if(!user){
+				req.flash('error','用户不存在！');
+				return res.redirect('/');
+			}
+			//	用户不存在
+
+			Post.getAll(user.name,function(err,posts){
+				//	查询
+
+				console.log(posts);
+
+				if(err){
+					req.flash('error',err);
+					return res.redirect('/');
+				}
+				//	查询失败
+
+				res.render('user',{
+					'title':user.name,
+					'posts':posts,
+					'user':req.session.user,
+					'success':res.flash('success').toString(),
+					'error':res.flash('error').toString()
+				});
+				//	渲染user页面
+
+			});	
+
+		});
+	});
+
+	app.get('/u/:name/:day/:title',function(req,res){
+		Post.getOne(req.params.name,req.params.day,req.params.title,function(err,post){
+			//	从数据库查询一条记录
+		
+			if(err){
+				req.flash('error',err);
+				return res.redirect('/');
+			}
+			//	查询失败
+
+			res.render('article',{
+				'title':req.params.title,
+				'post':post,
+				'user':req.session.user,
+				'success':req.flash('success').toString(),
+				'error':req.flash('error').toString()
+			});
+			//	渲染文章页面
+
+		});
+	});
 
 	app.get('logout',_checkLogin);
 	app.get('/logout',function(req,res){

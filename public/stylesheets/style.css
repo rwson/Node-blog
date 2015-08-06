@@ -62,3 +62,7 @@ article a:hover{
 .info{
 	font-size: 14px;
 }
+
+.post-contents img{
+	width: 300px;
+}

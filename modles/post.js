@@ -85,12 +85,12 @@ Post.prototype.save = function(callback){
 
 
 /**
- * 读取文章及相关信息
+ * 读取所有文章及相关信息
  * @param  {[type]}   name     [description]
  * @param  {Function} callback [description]
  * @return {[type]}            [description]
  */
-Post.get = function(name,callback){
+Post.getAll = function(name,callback){
 
 	mongodb.open(function(err,db){
 
@@ -139,5 +139,60 @@ Post.get = function(name,callback){
 	});
 
 };
+
+/**
+ * 获取一篇文章
+ * @param  {[type]}   name     [description]
+ * @param  {[type]}   day      [description]
+ * @param  {[type]}   title    [description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
+Post.getOne = function(name,day,title,callback){
+	mongodb.open(function(err,db){
+		//	打开数据库
+		
+		if(err){
+			return callback(err);
+		}
+		//	数据库打开失败
+
+		db.collection('post',function(err,collection){
+			//	读取posts集合
+
+			if(err){
+				mongodb.close();
+				return callbacl(err);
+			}
+			//	读取失败
+		
+			collection.findOne({
+				'name':name
+			},function(err,doc){
+				//	根据用户名、发表日期及文章名进行
+
+				console.log("-------------------------------");
+				console.log(name);
+				console.log(day);
+				console.log(title);
+				console.log(doc);
+				console.log("-------------------------------");
+
+				mongodb.close();
+				if(err){
+					return callback(err);
+				}
+				//	读取失败
+
+				doc.post = markdown.toHTML(doc.post);
+				//	解析markdown为html
+
+				callback(null,doc);
+				//	返回查到的文章
+
+			});
+		});
+	});
+}
 
 module.exports = Post;
