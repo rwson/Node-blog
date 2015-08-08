@@ -1,6 +1,7 @@
 var crypto = require('crypto'),
     User = require('../modles/user.js'),
     Post = require('../modles/post.js'),
+    Comment = require('../modles/comment.js'),
     fs = require('fs');
 
 module.exports = function (app) {
@@ -132,8 +133,7 @@ module.exports = function (app) {
     app.post('/post', _checkLogin);
     app.post('/post', function (req, res) {
         //	发表按钮点击
-
-        var currentUser = req.session.user[0],
+        var currentUser = req.session.user,
             post = new Post(currentUser.name, req.body.title, req.body.content);
         //	实例化post对象
 
@@ -228,10 +228,14 @@ module.exports = function (app) {
             }
             //	查询失败
 
+
+            console.log("评论数据:");
+            console.log(post);
+
             res.render('article', {
                 'title': req.params.title,
                 'post': post,
-                'user': req.session.user && req.session.user[0],
+                'user': req.session.user,
                 'success': req.flash('success').toString(),
                 'error': req.flash('error').toString()
             });
@@ -241,10 +245,40 @@ module.exports = function (app) {
     });
     //	文章详细请求
 
+    app.post('/u/:name/:day/:title',function(req,res){
+        var date = new Date(),
+            time = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " "
+                   + date.getHours() + ":" + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()),
+            comment = {
+                'name':req.body.name,
+                'email':req.body.email,
+                'website':req.body.website,
+                'time':time,
+                'content':req.body.content
+            },
+            newComment = new Comment(req.params.name,req.params.day,req.params.title,comment);
+            //  实例化一个评论对象
+        
+        newComment.save(function(err){
+            //  将评论入库
+
+            if(err){
+                req.flash('error',err);
+                return res.redirect('back');
+            }
+            //  评论失败
+
+            req.flash('success','留言成功!');
+            res.redirect('back');
+            //  评论成功
+
+        });    
+
+    });
+
     app.get('/edit/:name/:day/:title', _checkLogin);
     app.get('/edit/:name/:day/:title', function (req, res) {
-        var curUser = req.session.user[0];
-
+        var curUser = req.session.user;
         Post.edit(curUser.name, req.params.day, req.params.title, function (err, post) {
             //	取得之前发布或编辑过的文章
 
@@ -285,7 +319,7 @@ module.exports = function (app) {
             url = '/u/' + _encodeUrl(opt);
         //	拼接html,保存成功/失败后跳转
 
-        var curUser = req.session.user[0];
+        var curUser = req.session.user;
         Post.update(curUser.name, req.params.day, req.params.title, req.body.content, function (err) {
             if (err) {
                 req.flash('error', err);
@@ -305,7 +339,7 @@ module.exports = function (app) {
 
     app.get('/remove/:name/:day/:title', _checkLogin);
     app.get('/remove/:name/:day/:title', function (req, res) {
-        var curUser = req.session.user[0];
+        var curUser = req.session.user;
         Post.remove(curUser.name, req.params.day, req.params.title, function (err) {
             //	删除数据库里的记录
 

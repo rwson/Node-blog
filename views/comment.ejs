@@ -1,5 +1,6 @@
-<br/>
+<hr/>
 <% if(post.comments.length > 0) {%>
+	<h4>历史评论</h4>
 	<% post.comments.forEach(function(comment,index){ %>
 		<p>
 			<a href="<%= comment.website %>"><%= comment.name %></a>
@@ -7,9 +8,27 @@
 		</p>
 		<p>
 			评论内容:<br/>
-			<%= comment.content %>
+			<%- comment.content %>
 		</p>
 	<% }) %>
 <% } else { %>
 	<p>暂无评论</p>
 <% } %>
+
+<hr/>
+
+<h4>我要评论</h4>
+<form method="post">
+<% if(user){ %>
+	姓名:<input type="text" name="name" value="<%= user.name %>"><br/>
+	邮箱:<input type="text" name="email" value="<%= user.email %>"><br/>
+	网址:<input type="text" name="website" value="/u/<%= user.name %>"><br/>
+<% } else { %>
+	姓名:<input type="text" name="name" value=""><br/>
+	邮箱:<input type="text" name="email" value=""><br/>
+	网址:<input type="text" name="website" value=""><br/>
+<% } %>
+	评论内容:<br/>
+	<textarea name="content" cols="90" rows="10"></textarea>
+	<input type="submit" value="提交留言">
+</form>

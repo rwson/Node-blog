@@ -33,11 +33,16 @@ Comment.prototype.save = function(callback){
 
 		db.collection('posts',function(err,collection){
 			//	读取posts集合
-			
+
+			if(err){
+				mongodb.close();
+				return callback(err);
+			}
+
 			collection.update({
 				'name':name,
 				'title':title,
-				'time.day':time
+				'time.day':day
 			},{
 				'$push':{
 					'comments':comment
@@ -59,6 +64,5 @@ Comment.prototype.save = function(callback){
 
 	});		
 }
-
 
 module.exports = Comment;

@@ -19,7 +19,7 @@ User.prototype.save = function (callback) {
     var user = {
         name: this.name,
         password: this.password,
-        email: this.password
+        email: this.email
     };
 
     //	打开数据库

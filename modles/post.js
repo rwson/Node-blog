@@ -1,8 +1,5 @@
 var mongodb = require('./db');
 
-var Comment = require('./comment');
-//  引入评论模块
-
 var markdown = require('markdown').markdown;
 //	引入markdown模块
 
@@ -140,7 +137,6 @@ Post.getAll = function (name, callback) {
         });
 
     });
-
 };
 
 /**
@@ -185,7 +181,13 @@ Post.getOne = function (name, day, title, callback) {
                 if(doc){
 					doc.post = markdown.toHTML(doc.post);
 					doc.comments.forEach(function(comment){
-						comment.content = markdowm.toHTML(comment.content);
+                        //  循环评论
+                        
+                        if(comment.content){
+                            comment.content = markdown.toHTML(comment.content);        
+                        }
+                        //  评论内容存在,用markdown转成HTML格式
+
 					});
                 }
                 //	解析markdown为html
