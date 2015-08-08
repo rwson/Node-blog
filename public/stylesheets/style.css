@@ -41,7 +41,7 @@ nav a {
 nav a:hover{
 	background: #f00;
 	color: #f9f9f9;
-	-webkit-transition: all .2s linear;
+	-webkit-transition: all 0.2s linear;
 }
 
 article{
@@ -65,4 +65,19 @@ article a:hover{
 
 .post-contents img{
 	width: 300px;
+}
+
+.edit{
+	margin: 3px;
+	padding: 2px 5px;
+	border-radius: 3px;
+	background: #f3f3f3;
+	color: #333;
+	font-size: 13px;
+}
+
+.edit:hover{
+	text-decoration: none;
+	background: #f00;
+	-webkit-transition: all 0.2s linear;
 }

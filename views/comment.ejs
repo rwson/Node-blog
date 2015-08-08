@@ -1,0 +1,15 @@
+<br/>
+<% if(post.comments.length > 0) {%>
+	<% post.comments.forEach(function(comment,index){ %>
+		<p>
+			<a href="<%= comment.website %>"><%= comment.name %></a>
+			<span class="info">评论时间: <%= comment.time %> </span>
+		</p>
+		<p>
+			评论内容:<br/>
+			<%= comment.content %>
+		</p>
+	<% }) %>
+<% } else { %>
+	<p>暂无评论</p>
+<% } %>

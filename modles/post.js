@@ -1,5 +1,8 @@
 var mongodb = require('./db');
 
+var Comment = require('./comment');
+//  引入评论模块
+
 var markdown = require('markdown').markdown;
 //	引入markdown模块
 
@@ -9,10 +12,10 @@ var markdown = require('markdown').markdown;
  * @param {[type]} title [description]
  * @param {[type]} post  [description]
  */
-function Post(name,title,post){
-	this.name = name;
-	this.title = title;
-	this.post = post;
+function Post(name, title, post) {
+    this.name = name;
+    this.title = title;
+    this.post = post;
 }
 
 /**
@@ -20,67 +23,67 @@ function Post(name,title,post){
  * @param  {Function} callback [description]
  * @return {[type]}            [description]
  */
-Post.prototype.save = function(callback){
-	var date = new Date(),
-		year = date.getFullYear(),
-		month = date.getMonth() + 1 < 9 ? "0" + (date.getMonth() + 1) : (date.getMonth() + 1),
-		day = date.getDate() < 9 ? "0" + date.getDate() : date.getDate(),
-		hour = date.getHours(),
-		minute = date.getMinutes() < 9 ? "0" + date.getMinutes() : date.getMinutes(),
+Post.prototype.save = function (callback) {
+    var date = new Date(),
+        year = date.getFullYear(),
+        month = date.getMonth() + 1 < 9 ? "0" + (date.getMonth() + 1) : (date.getMonth() + 1),
+        day = date.getDate() < 9 ? "0" + date.getDate() : date.getDate(),
+        hour = date.getHours(),
+        minute = date.getMinutes() < 9 ? "0" + date.getMinutes() : date.getMinutes(),
 
-		time = {
-			'date':date,
-			'year':year,
-			'month':year + "-" + month,
-			'day':year + "-" + month + "-" + day,
-			'minutes':year + "-" + month + "-" + day + " " + hour + ":" + minute
-		},
-		//	存储各种时间格式
+        time = {
+            'date': date,
+            'year': year,
+            'month': year + "-" + month,
+            'day': year + "-" + month + "-" + day,
+            'minutes': year + "-" + month + "-" + day + " " + hour + ":" + minute
+        },
+    //	存储各种时间格式
 
-		post = {
-			'name':this.name,
-			'time':time,
-			'title':this.title,
-			'post':this.post
-		};
-		//	要存储的文档格式
+        post = {
+            'name': this.name,
+            'time': time,
+            'title': this.title,
+            'post': this.post,
+            'comments':[]
+        };
+    //	要存储的文档格式
 
-		mongodb.open(function(err,db){
-			//	打开数据库
+    mongodb.open(function (err, db) {
+        //	打开数据库
 
-			if(err){
-				return callback(err);
-			}
-			//	打开失败
+        if (err) {
+            return callback(err);
+        }
+        //	打开失败
 
-			db.collection('posts',function(err,collection){
-				//	读取posts集合
+        db.collection('posts', function (err, collection) {
+            //	读取posts集合
 
-				if(err){
-					mongodb.close();
-					return callback(err);
-				}
+            if (err) {
+                mongodb.close();
+                return callback(err);
+            }
 
-				collection.insert(post,{
-					'safe':true
-				},function(err){
-					//	插入数据
+            collection.insert(post, {
+                'safe': true
+            }, function (err) {
+                //	插入数据
 
-					mongodb.close();
+                mongodb.close();
 
-					if(err){
-						return callback(err);
-					}
-					//	插入失败,返回err
+                if (err) {
+                    return callback(err);
+                }
+                //	插入失败,返回err
 
-					callback(null);
+                callback(null);
 
-				});
+            });
 
-			});
+        });
 
-		});
-
+    });
 };
 
 
@@ -90,53 +93,53 @@ Post.prototype.save = function(callback){
  * @param  {Function} callback [description]
  * @return {[type]}            [description]
  */
-Post.getAll = function(name,callback){
+Post.getAll = function (name, callback) {
 
-	mongodb.open(function(err,db){
+    mongodb.open(function (err, db) {
 
-		//	打开数据库
-		if(err){
-			return callback(err);
-		}
+        //	打开数据库
+        if (err) {
+            return callback(err);
+        }
 
-		db.collection('posts',function(err,collection){
-			//	读取posts集合
+        db.collection('posts', function (err, collection) {
+            //	读取posts集合
 
-			if(err){
-				mongodb.close();
-				return callback(err);
-			}
+            if (err) {
+                mongodb.close();
+                return callback(err);
+            }
 
-			var query = {};
+            var query = {};
 
-			if(name){
-				query.name = name;
-			}
+            if (name) {
+                query.name = name;
+            }
 
-			collection.find(query).sort({
-				'time':-1
-			}).toArray(function(err,docs){
-				//	根据query查询文章
+            collection.find(query).sort({
+                'time': -1
+            }).toArray(function (err, docs) {
+                //	根据query查询文章
 
-				mongodb.close();
-				if(err){
-					return callback(err);
-				}
-				//	读取失败,返回err
+                mongodb.close();
+                if (err) {
+                    return callback(err);
+                }
+                //	读取失败,返回err
 
-				docs.forEach(function(doc, index){
-					doc.post = markdown.toHTML(doc.post);
-				});
-				//	添加markdown模块
+                docs.forEach(function (doc, index) {
+                    doc.post = markdown.toHTML(doc.post);
+                });
+                //	添加markdown模块
 
-				callback(null,docs);
-				//	读取成功,用数组形式返回查询结果
+                callback(null, docs);
+                //	读取成功,用数组形式返回查询结果
 
-			});
+            });
 
-		});
+        });
 
-	});
+    });
 
 };
 
@@ -148,51 +151,198 @@ Post.getAll = function(name,callback){
  * @param  {Function} callback [description]
  * @return {[type]}            [description]
  */
-Post.getOne = function(name,day,title,callback){
-	mongodb.open(function(err,db){
-		//	打开数据库
-		
-		if(err){
-			return callback(err);
-		}
-		//	数据库打开失败
+Post.getOne = function (name, day, title, callback) {
+    mongodb.open(function (err, db) {
+        //	打开数据库
 
-		db.collection('post',function(err,collection){
-			//	读取posts集合
+        if (err) {
+            return callback(err);
+        }
+        //	数据库打开失败
 
-			if(err){
-				mongodb.close();
-				return callbacl(err);
-			}
-			//	读取失败
-		
-			collection.findOne({
-				'name':name
-			},function(err,doc){
-				//	根据用户名、发表日期及文章名进行
+        db.collection('posts', function (err, collection) {
+            //	读取posts集合
 
-				console.log("-------------------------------");
-				console.log(name);
-				console.log(day);
-				console.log(title);
-				console.log(doc);
-				console.log("-------------------------------");
+            if (err) {
+                mongodb.close();
+                return callbacl(err);
+            }
+            //	读取失败
 
-				mongodb.close();
-				if(err){
-					return callback(err);
-				}
-				//	读取失败
+            collection.findOne({
+                'name': name,
+                'title': title,
+                'time.day': day
+            }, function (err, doc) {
+                //	根据用户名、发表日期及文章名进行
 
-				doc.post = markdown.toHTML(doc.post);
-				//	解析markdown为html
+                mongodb.close();
+                if (err) {
+                    return callback(err);
+                }
+                //	读取失败
 
-				callback(null,doc);
-				//	返回查到的文章
+                if(doc){
+					doc.post = markdown.toHTML(doc.post);
+					doc.comments.forEach(function(comment){
+						comment.content = markdowm.toHTML(comment.content);
+					});
+                }
+                //	解析markdown为html
 
-			});
-		});
-	});
+                callback(null, doc);
+                //	返回查到的文章
+
+            });
+        });
+    });
+}
+
+/**
+ * 返回之前发表或者最后一次编辑提交的内容
+ * @param  {[type]}   name     [description]
+ * @param  {[type]}   day      [description]
+ * @param  {[type]}   title    [description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
+Post.edit = function (name, day, title, callback) {
+    mongodb.open(function (err, db) {
+        //	打开数据库
+
+        if (err) {
+            return callback(err);
+        }
+        //	打开失败
+
+        db.collection('posts', function (err, collection) {
+            //	读取posts表
+
+            if (err) {
+                mongodb.close();
+                return callback(err);
+            }
+            //	读取失败
+
+            collection.findOne({
+                'name': name,
+                'time.day': day,
+                'title': title
+            }, function (err, doc) {
+
+                mongodb.close();
+                if (err) {
+                    return callback(err);
+                }
+                //	读取失败
+
+                callback(null, doc);
+                //	把查询到数据返回给回调函数
+            });
+
+        });
+
+    });
+}
+
+/**
+ * 把文章更新到数据库
+ * @param  {[type]}   name     [description]
+ * @param  {[type]}   day      [description]
+ * @param  {[type]}   title    [description]
+ * @param  {[type]}   post     [description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
+Post.update = function (name, day, title, post, callback) {
+    mongodb.open(function (err, db) {
+        //	打开数据库
+
+        if (err) {
+            return callback(err);
+        }
+        //	打开失败,并且返回错误信息
+
+        db.collection('posts', function (err, collection) {
+            //	读取posts表
+
+            if (err) {
+                mongodb.close();
+                return callback(err);
+            }
+            //	读取失败
+
+            collection.update({
+                'title': title,
+                'name': name,
+                'time.day': day
+            }, {
+                $set: {
+                    'post': post
+                }
+            }, function (err) {
+                //	更新对应的文章
+
+                if (err) {
+                    return callback(err);
+                }
+                //	更新失败
+
+                callback(null);
+            });
+
+        });
+
+    });
+}
+
+/**
+ * 从数据库中删除一篇文章
+ * @param  {[type]}   name     [description]
+ * @param  {[type]}   day      [description]
+ * @param  {[type]}   tltle    [description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
+Post.remove = function (name, day, tltle, callback) {
+    mongodb.open(function (err, db) {
+        //	打开数据库
+
+        if (err) {
+            return callback(err);
+        }
+        //	打开失败
+
+        db.collection('posts', function (err, collection) {
+            //	读取posts表
+
+            if (err) {
+                mongodb.close();
+                return callback(err);
+            }
+            //	读取失败
+
+            collection.remove({
+                'name': name,
+                'time.day': day,
+                'title': title
+            }, {
+                'w': 1
+            }, function (err) {
+                //	根据用户名,日期,标题删除一篇文章
+
+                mongo.close();
+
+                if (err) {
+                    return callback(err);
+                }
+                //	删除失败
+
+                callback(null);
+                //	删除成功
+            });
+        });
+    });
 }
 
 module.exports = Post;
