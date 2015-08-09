@@ -140,6 +140,68 @@ Post.getAll = function (name, callback) {
 };
 
 /**
+ * 分页实现,一次获取10篇文章
+ * @param  {[type]}   name     [description]
+ * @param  {[type]}   page     [description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
+Post.getTen = function (name,page,callback){
+    mongodb.open(function(err,db){
+        //  打开数据库
+
+        if(err){
+            return callback(err);
+        }
+        //  打开失败
+
+        db.collection('posts',function(err,collection){
+            //  查询posts表
+
+            if(err){
+                mongodb.close();
+                return callback(err);
+            }
+            //  查询失败
+
+            var query ={};
+
+            if(name){
+                query.name =name;
+            }
+
+            collection.count(query,function(err,total){
+                //  count查询,返回特定的文档数total
+
+                collection.find(query,{
+                    'skip':(page - 1) * 10,
+                    'limit':10
+                }).sort({
+                    'time':-1
+                }).toArray(function(err,docs){
+                    //  跳过前几页的多少个10条,查询本页的10条,并且按时间降序排序
+
+                    mongodb.close();
+                    if(err){
+                        return callback(err);
+                    }
+                    //  查询失败
+
+                    docs.forEach(function(doc){
+                        doc.post = markdown.toHTML(doc.post);
+                    });
+
+                    callback(null,docs,total);
+                });
+
+            });
+
+        });
+
+    });
+};
+
+/**
  * 获取一篇文章
  * @param  {[type]}   name     [description]
  * @param  {[type]}   day      [description]
@@ -198,7 +260,7 @@ Post.getOne = function (name, day, title, callback) {
             });
         });
     });
-}
+};
 
 /**
  * 返回之前发表或者最后一次编辑提交的内容
@@ -245,7 +307,7 @@ Post.edit = function (name, day, title, callback) {
         });
 
     });
-}
+};
 
 /**
  * 把文章更新到数据库
@@ -296,17 +358,17 @@ Post.update = function (name, day, title, post, callback) {
         });
 
     });
-}
+};
 
 /**
  * 从数据库中删除一篇文章
  * @param  {[type]}   name     [description]
  * @param  {[type]}   day      [description]
- * @param  {[type]}   tltle    [description]
+ * @param  {[type]}   title    [description]
  * @param  {Function} callback [description]
  * @return {[type]}            [description]
  */
-Post.remove = function (name, day, tltle, callback) {
+Post.remove = function (name, day, title, callback) {
     mongodb.open(function (err, db) {
         //	打开数据库
 
@@ -333,7 +395,7 @@ Post.remove = function (name, day, tltle, callback) {
             }, function (err) {
                 //	根据用户名,日期,标题删除一篇文章
 
-                mongo.close();
+                mongodb.close();
 
                 if (err) {
                     return callback(err);
@@ -345,6 +407,8 @@ Post.remove = function (name, day, tltle, callback) {
             });
         });
     });
-}
+};
+
+
 
 module.exports = Post;

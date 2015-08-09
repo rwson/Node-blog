@@ -22,6 +22,10 @@ var flash = require('connect-flash');
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+
+// app.engine('.html', require('ejs').__express);
+//	设置后缀名为.html的文件里面存放ejs代码
+
 app.use(express.favicon());
 app.use(express.logger('dev'));
 

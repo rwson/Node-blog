@@ -6,18 +6,35 @@ var crypto = require('crypto'),
 
 module.exports = function (app) {
 
+
     app.get('/', function (req, res) {
-        Post.getAll(null, function (err, posts) {
-            //	从数据库中读取所有信息
+        var page = req.query.p ? parseInt(req.query.p) : 1;
+        //  判断是否为第一个,并且把请求的页码转换成数字类型
+
+        Post.getTen(null, page, function (err, posts, total) {
+
+            if (err) {
+                posts = [];
+            }
+
+                console.log("让老子来看看");
+                console.log(posts.length);
+                console.log(total);
 
             res.render('index', {
                 'title': '主页',
                 'user': req.session.user,
                 'posts': posts,
+                'page': page,
+                'isFirstPage': page == 1,
+                'isLastPage': ((page - 1) * 10 + posts.length) == total,
                 'success': req.flash('success').toString(),
                 'error': req.flash('error').toString()
             });
+
+
         });
+
     });
     //	首页请求
 
@@ -185,32 +202,38 @@ module.exports = function (app) {
     //	上传文件
 
     app.get('/u/:name', function (req, res) {
-        //	检测用户名是否存在
+        var page = req.query.p ? parseInt(req.query.p) : 1;
+        //  判断是否为第一页
 
         User.get(req.params.name, function (err, user) {
+            //  检测用户名是否存在
+
             if (!user) {
                 req.flash('error', '用户不存在！');
                 return res.redirect('/');
             }
-            //	用户不存在
+            //  用户不存在
 
-            Post.getAll(user.name, function (err, posts) {
-                //	查询
+            Post.getTen(user.name, page, function (err, posts, total) {
+                //  查询
 
                 if (err) {
                     req.flash('error', err);
                     return res.redirect('/');
                 }
-                //	查询失败
+                //  查询失败
 
                 res.render('user', {
                     'title': user.name,
                     'posts': posts,
+                    'page': page,
+                    'isFirstPage': page == 1,
+                    'isLastPage': ((page - 1) * 10 + posts.length) == total,
                     'user': req.session.user,
                     'success': req.flash('success').toString(),
                     'error': req.flash('error').toString()
                 });
-                //	渲染user页面
+                //  渲染user页面
 
             });
 
@@ -228,10 +251,6 @@ module.exports = function (app) {
             }
             //	查询失败
 
-
-            console.log("评论数据:");
-            console.log(post);
-
             res.render('article', {
                 'title': req.params.title,
                 'post': post,
@@ -245,34 +264,34 @@ module.exports = function (app) {
     });
     //	文章详细请求
 
-    app.post('/u/:name/:day/:title',function(req,res){
+    app.post('/u/:name/:day/:title', function (req, res) {
         var date = new Date(),
             time = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " "
-                   + date.getHours() + ":" + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()),
+                + date.getHours() + ":" + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()),
             comment = {
-                'name':req.body.name,
-                'email':req.body.email,
-                'website':req.body.website,
-                'time':time,
-                'content':req.body.content
+                'name': req.body.name,
+                'email': req.body.email,
+                'website': req.body.website,
+                'time': time,
+                'content': req.body.content
             },
-            newComment = new Comment(req.params.name,req.params.day,req.params.title,comment);
-            //  实例化一个评论对象
-        
-        newComment.save(function(err){
+            newComment = new Comment(req.params.name, req.params.day, req.params.title, comment);
+        //  实例化一个评论对象
+
+        newComment.save(function (err) {
             //  将评论入库
 
-            if(err){
-                req.flash('error',err);
+            if (err) {
+                req.flash('error', err);
                 return res.redirect('back');
             }
             //  评论失败
 
-            req.flash('success','留言成功!');
+            req.flash('success', '留言成功!');
             res.redirect('back');
             //  评论成功
 
-        });    
+        });
 
     });
 
