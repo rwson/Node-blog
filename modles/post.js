@@ -7,11 +7,13 @@ var markdown = require('markdown').markdown;
  * Post类
  * @param {[type]} name  [description]
  * @param {[type]} title [description]
+ * @param {[type]} tags  [description]
  * @param {[type]} post  [description]
  */
-function Post(name, title, post) {
+function Post(name, title, tags, post) {
     this.name = name;
     this.title = title;
+    this.tags = tags;
     this.post = post;
 }
 
@@ -42,6 +44,7 @@ Post.prototype.save = function (callback) {
             'time': time,
             'title': this.title,
             'post': this.post,
+            'tags':this.tags,
             'comments':[]
         };
     //	要存储的文档格式
@@ -409,6 +412,135 @@ Post.remove = function (name, day, title, callback) {
     });
 };
 
+/**
+ * 返回所有文章的存档信息
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
+Post.getArchive = function(callback){
+    mongodb.open(function(err,db){
+        //  打开数据库
 
+        if(err){
+            return callback(err);
+        }
+        //  打开失败
+
+        db.collection('posts',function(err,collection){
+            //  读取posts表
+
+            if(err){
+                mongodb.close();
+                return callback(err);
+            }
+            //  读取失败
+
+            collection.find({},{
+                'name':1,
+                'time':1,
+                'title':1
+            }).sort({
+                'time':-1
+            }).toArray(function(err,docs){
+                //  返回只包含name、time、title属性的温度组成的数组
+
+                mongodb.close();
+
+                if(err){
+                    callback(err);
+                }
+
+                callback(null,docs);
+
+            });
+        });
+
+    });
+};
+
+/**
+ * 获取所有的分类标签
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
+Post.getTags = function(callback){
+    mongodb.open(function(err,db){
+        //  打开数据库
+
+        if(err){
+            return callback(err);
+        }
+        //  打开失败
+
+        db.collection('posts',function(err,collection){
+            //  查询posts表
+
+            if(err){
+                mongodb.close();
+                return callback(err);
+            }
+            //  查询失败
+
+            collection.distinct('tags',function(err,docs){
+                //  distinct用来找出指定建的所有不同值
+
+                mongodb.close();
+
+                if(err){
+                    return callback(err);
+                }
+                //  获取失败
+
+                callback(null,docs);
+
+            });
+
+        });
+
+    });
+};
+
+/**
+ * 获取指定的分类标签
+ * @param  {[type]}   tag      [description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
+Post.getTag = function(tag,callback){
+    mongodb.open(function(err,db){
+        //  打开数据库
+
+        db.collection('posts',function(err,collection){
+            //  查询posts表
+
+            if(err){
+                mongodb.close();
+                return callback(err);
+            }
+            //  查询失败
+
+            collection.find({
+                'tags':tag
+            },{
+                'name':1,
+                'time':1,
+                'title':1
+            }).toArray(function(err,docs){
+                //  查询所有tags里面只包含tag的标签,并且返回由name、time、title组成的对象数组
+
+                mongodb.close();
+
+                if(err){
+                    return callback(err);   
+                }
+                //  查询失败
+                
+                callback(null,docs);
+            });
+
+        });
+
+    });
+};
 
 module.exports = Post;

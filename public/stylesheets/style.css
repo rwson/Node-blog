@@ -105,3 +105,37 @@ article a:hover{
 	color: #f9f9f9;
 	-webkit-transition: all 0.2s linear;
 }
+
+.archive{
+	list-style: none;
+	line-height: 28px;
+}
+
+.archive h3{
+	margin: 0.5em 0;
+}
+
+.archive time{
+	float: left;
+	font-size: 14px;
+	color: #999;
+	margin: 0 1.2em 0 0;
+}
+
+.tag{
+	background: #f00;
+	border-radius: 3px;
+	font-size: 14px;
+	line-height: 28px;
+	color: #fff;
+	display: inline-block;
+	padding: 0 5px;
+	margin: 0 0 8px 0;
+}
+
+.tag:hover{
+	text-decoration: none;
+	background: #fff;
+	color: #000;
+	-webkit-transition: all 0.2s linear;
+}

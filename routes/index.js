@@ -12,14 +12,12 @@ module.exports = function (app) {
         //  判断是否为第一个,并且把请求的页码转换成数字类型
 
         Post.getTen(null, page, function (err, posts, total) {
-
+            //  从数据库中获取当前页对应的10条数据
+            
             if (err) {
                 posts = [];
             }
-
-                console.log("让老子来看看");
-                console.log(posts.length);
-                console.log(total);
+            //  获取失败,把post置为空数组
 
             res.render('index', {
                 'title': '主页',
@@ -31,15 +29,11 @@ module.exports = function (app) {
                 'success': req.flash('success').toString(),
                 'error': req.flash('error').toString()
             });
-
-
         });
-
     });
-    //	首页请求
+    //	首页
 
     app.get('/reg', _checkNotLogin);
-    //	验证是否登录
     app.get('/reg', function (req, res) {
         res.render('reg', {
             'title': '注册',
@@ -98,7 +92,7 @@ module.exports = function (app) {
 
         });
     });
-    //	注册请求
+    //	注册提交
 
     app.get('/login', _checkNotLogin);
     app.get('/login', function (req, res) {
@@ -134,7 +128,7 @@ module.exports = function (app) {
             res.redirect('/');
         });
     });
-    //	登录请求
+    //	登录
 
     app.get('/post', _checkLogin);
     app.get('/post', function (req, res) {
@@ -149,10 +143,11 @@ module.exports = function (app) {
 
     app.post('/post', _checkLogin);
     app.post('/post', function (req, res) {
-        //	发表按钮点击
         var currentUser = req.session.user,
-            post = new Post(currentUser.name, req.body.title, req.body.content);
-        //	实例化post对象
+            tags = [req.body.tag1,req.body.tag2,req.body.tag3],
+        //  标签    
+            post = new Post(currentUser.name, req.body.title, tags,req.body.content);
+        //  实例化post对象
 
         post.save(function (err) {
             if (err) {
@@ -165,7 +160,7 @@ module.exports = function (app) {
             res.redirect('/');
         });
     });
-    //	发表请求
+    //	发表文章
 
     app.get('/upload', _checkLogin);
     app.get('/upload', function (req, res) {
@@ -200,6 +195,75 @@ module.exports = function (app) {
         }
     });
     //	上传文件
+
+    app.get('/archive',function(req,res){
+        Post.getArchive(function(err,posts){
+            //  从数据库中获取记录
+
+            if(err){
+                req.flash('error',err);
+                return res.redirect('/');
+            }
+            //  查询失败
+
+            console.log("---------文章列表---------");
+            console.log(posts);
+            console.log("---------文章列表---------");
+
+            res.render('acrhive',{
+                'title':'存档',
+                'posts':posts,
+                'user':req.session.user,
+                'success':req.flash('success'),
+                'error':req.flash('error')
+            });
+        });
+    });
+    //  存档
+
+    app.get('/tags',function(req,res){
+        Post.getTags(function(err,posts){
+            //  从数据库获取对应标签的文章
+
+            if(err){
+                req.flash('error',err);
+                return res.redirect('/');
+            }
+            //  读取失败
+
+            res.render('tags',{
+                'title':'分类标签',
+                'posts':posts,
+                'user':req.session.user,
+                'success':req.flash('success').toString(),
+                'error':req.flash('error').toString()
+            });
+
+        });
+    });
+    //  所有标签
+
+    app.get('/tags/:tag',function(req,res){
+        Post.getTag(req.params.tag,function(err,posts){
+            //  从数据库获取该标签对应的标签
+
+            if(err){
+                req.flash('error',err);
+                return res.redirect('/');
+            }
+            //  查询失败
+
+            res.render('tag',{
+                'title':req.params.tag,
+                'posts':posts,
+                'user':req.session.user,
+                'success':req.flash('success').toString(),
+                'error':req.flash('error').toString()
+            });
+
+        });
+    });
+    //  指定标签
 
     app.get('/u/:name', function (req, res) {
         var page = req.query.p ? parseInt(req.query.p) : 1;
@@ -239,7 +303,7 @@ module.exports = function (app) {
 
         });
     });
-    //	用户详情请求
+    //	用户详情
 
     app.get('/u/:name/:day/:title', function (req, res) {
         Post.getOne(req.params.name, req.params.day, req.params.title, function (err, post) {
@@ -262,7 +326,7 @@ module.exports = function (app) {
 
         });
     });
-    //	文章详细请求
+    //	文章详细
 
     app.post('/u/:name/:day/:title', function (req, res) {
         var date = new Date(),
@@ -292,8 +356,8 @@ module.exports = function (app) {
             //  评论成功
 
         });
-
     });
+    //  评论请求
 
     app.get('/edit/:name/:day/:title', _checkLogin);
     app.get('/edit/:name/:day/:title', function (req, res) {
@@ -373,7 +437,7 @@ module.exports = function (app) {
 
         });
     });
-    //	删除文章的请求
+    //	删除文章
 
     app.get('logout', _checkLogin);
     app.get('/logout', function (req, res) {
@@ -381,7 +445,7 @@ module.exports = function (app) {
         req.flash('success', '退出成功');
         res.redirect('/');
     });
-    //	登出请求
+    //	登出
 
 }
 

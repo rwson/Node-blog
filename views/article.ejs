@@ -17,6 +17,16 @@
 			作者:<a href="/u/<%= post.name %>"><%= post.name %></a>| 
 			日期:<%= post.time.minutes %>
 		</p>
+		<% if(post.tags && post.tags.length > 0){ %>
+			<h5>标签</h5>	
+			<p>
+				<% post.tags.forEach(function(tag,index){ %>
+					<% if(tag){ %>
+						<a class="tag" href="/tags/<%= tag %>"><%= tag %></a>
+					<% } %>
+				<% }) %>
+			</p>
+		<% } %>	
 		<p><%- post.post %></p>
 	</div>
 <%- include comment%>

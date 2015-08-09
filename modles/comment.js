@@ -63,6 +63,6 @@ Comment.prototype.save = function(callback){
 		});
 
 	});		
-}
+};
 
 module.exports = Comment;
