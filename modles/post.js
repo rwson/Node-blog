@@ -17,9 +17,6 @@ function Post(name, head,title, tags, post) {
     this.title = title;
     this.tags = tags;
     this.post = post;
-
-    console.log(head);
-
 }
 
 /**
@@ -51,6 +48,7 @@ Post.prototype.save = function (callback) {
             'title': this.title,
             'post': this.post,
             'tags': this.tags,
+            'reprint_info':{},
             'comments': [],
             'pv': 0
         };
@@ -606,6 +604,108 @@ Post.search = function(keyword,callback){
                 //  检索失败
                 
                 callback(null,docs);
+            });
+
+        });
+
+    });
+};
+
+/**
+ * 转载一篇文章
+ * @param  {[type]}   reprint_from [description]
+ * @param  {[type]}   reprint_to   [description]
+ * @param  {Function} callback     [description]
+ * @return {[type]}                [description]
+ */
+Post.reprint = function(reprint_from,reprint_to,callback){
+    mongodb.open(function(err,db){
+        //  打开数据库
+
+        if(err){
+            return callback(err);
+        }
+        //  打开失败
+
+        db.collection('posts',function(err,collection){
+            //  查询posts表
+
+            if(err){
+                mongodb.close();
+                return callback(err);
+            }
+            //  打开失败
+
+            collection.findOne({
+                'name':reprint_from.name,
+                'time.day':reprint_from.day,
+                'title':reprint_from.title
+            },function(err,doc){
+                //  查找原来的文档信息
+
+                if(err){
+                    mongodb.close();
+                    return callback(err);
+                }
+                //  查找失败
+
+                var date = new Date(),
+                    time = {
+                        'date':date,
+                        'year':date.getFullYear(),
+                        'month':date.getFullYear() + "-" + (date.getMonth() + 1),
+                        'day':date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate(),
+                        'minute':date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " + date.getHours() + ":" + (date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes())
+                    };
+                delete doc._id;
+                //  删除_id,因为_id是唯一的
+
+                doc.name = reprint_to.name;
+                doc.head = reprint_to.head;
+                doc.time = time;
+                doc.title = doc.title.search(/[转载]/ > -1) ? doc.title : "[转载]" + doc.title;
+                doc.comments = [];
+                doc.pv = 0;
+                //  组装副本数据,用做插入数据库
+
+                collection.update({
+                    'name':reprint_from.name,
+                    'time.day':reprint_from.day,
+                    'title':reprint_from.title
+                },{
+                    '$push':{
+                        'reprint_info.reprint_to':{
+                            'name':doc.name,
+                            'day':time.day,
+                            'title':doc.title
+                        }
+                    }
+                },function(err){
+                    //  更新原来文档中reprint_info中的reprint_to属性
+
+                    if(err){
+                        mongodb.close();
+                        return callback(err);
+                    }
+                    //  更新失败
+
+                    collection.insert(doc,{
+                        'safe':true
+                    },function(err,post){
+                        //  将生成的副本重新插入数据库,并且返回存储后的文档
+
+                        mongodb.close();
+
+                        if(err){
+                            return callback(err);
+                        }
+                        //  转载失败
+
+                        callback(null,post[0]);
+
+                    });
+                });
+
             });
 
         });

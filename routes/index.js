@@ -469,7 +469,65 @@ module.exports = function (app) {
 
         });
     });
-    //	删除文章
+    //	删除指定的文章
+
+    app.get('/reprint/:name/:day/title',_checkLogin);
+    app.get('/reprint/:name/:day/title',function(req,res){
+
+        Post.edit(req.params.name,req.params.day,req.params.title,function(err,post){
+            //  调用edit返回markdown格式的文本,而不是getOne返回的HTML字符串
+
+            if(err){
+                req.flash('error',err);
+                return res.redirect('back');
+            }
+            //  查询失败
+
+            var curUser = req.session.user,
+                reprint_from = {
+                    'name':post.name,
+                    'day':post.time.day,
+                    'title':post.title
+                },
+                reprint_to = {
+                    'name':curUser.name,
+                    'head':curUser.head
+                },
+            //  转载信息
+
+                opt = [
+                    {
+                        "encode": true,
+                        "param": posts.name
+                    },
+                    {
+                        "param": post.time.day
+                    },
+                    {
+                        "encode": true,
+                        "param": post.title
+                    }
+                ],
+                url = '/u/' + _encodeUrl(opt);
+                //  组装url,调用_encodeUrl解决中文无法解析问题
+
+            Post.reprint(function(err,post){
+                //  调用转载方法
+
+                if(err){
+                    req.flash('error',err);
+                    return res.redirect('back');
+                }
+                //  转载失败,返回之前的页面
+
+                req.flash('success','转载成功!');
+                res.redirect(url);
+
+            });
+
+        });
+    });
+    //  转载请求
 
     app.get('logout', _checkLogin);
     app.get('/logout', function (req, res) {
@@ -510,7 +568,7 @@ function _checkLogin(req, res, next) {
  */
 function _checkNotLogin(req, res, next) {
     if (req.session.user) {
-        req.flash('error', '已登录！')
+        req.flash('error', '已登录！');
         res.redirect('back');
     }
     next();
