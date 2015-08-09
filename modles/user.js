@@ -1,4 +1,5 @@
-var mongodb = require('./db');
+var mongodb = require('./db'),
+    crypto = require('crypto');
 
 /**
  * user类
@@ -16,11 +17,15 @@ function User(user) {
  * @return {[type]}            [description]
  */
 User.prototype.save = function (callback) {
-    var user = {
-        name: this.name,
-        password: this.password,
-        email: this.email
-    };
+    var md5 = crypto.createHash('md5'),
+        emailMd5 = md5.update(this.email.toLowerCase()).digest('hex'),
+        head = 'http://zh-tw.gravatar.com/avatar' + emailMd5 + '?s=48',
+        user = {
+            'name': this.name,
+            'password': this.password,
+            'email': this.email,
+            'head':head
+        };
 
     //	打开数据库
     mongodb.open(function (err, db) {
@@ -49,7 +54,6 @@ User.prototype.save = function (callback) {
         });
 
     });
-
 };
 
 /**
@@ -87,14 +91,19 @@ User.get = function (name, callback) {
                 }
                 //  查询失败
 
-                callback(null, user);
+                var cUser = user;
+                if(user instanceof Array){
+                    cUser = user[0];
+                }
+                //  如果返回的user是数组类型,就手动改成对象类型
+
+                callback(null, cUser);
 
             });
 
         });
 
     });
-
 };
 
 module.exports = User;

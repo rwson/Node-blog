@@ -3,11 +3,12 @@
 	<h4>历史评论</h4>
 	<% post.comments.forEach(function(comment,index){ %>
 		<p>
+			<img src="<%= comment.head %>" class="l-head" alt="头像">	
 			<a href="<%= comment.website %>"><%= comment.name %></a>
 			<span class="info">评论时间: <%= comment.time %> </span>
 		</p>
 		<p>
-			评论内容:<br/>
+			评论内容:
 			<%- comment.content %>
 		</p>
 	<% }) %>

@@ -6,21 +6,29 @@
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
-    <header>
-    	<h1><%= title %></h1>
-    </header>
+      <header>
+      	 <h1><%= title %></h1>
+      </header>
 	<nav>
-		<span><a href="/">Home</a></span>
-    <span><a href="/archive">Archive</a></span>
-    <span><a href="/tags">Tags</a></span>
-    <%if (user){%>
-    <span><a href="/upload">Upload</a></span>
-    <span><a href="/post">Post</a></span>
-    <span><a href="/logout">Logout</a></span>
-    <% } else { %>
-    <span><a href="/reg">Register</a></span>
-		<span><a href="/login">Login</a></span>
-    <% } %>
+  		<span><a href="/">Home</a></span>
+      <span><a href="/archive">Archive</a></span>
+      <span><a href="/tags">Tags</a></span>
+      <%if (user){%>
+      <span><a href="/upload">Upload</a></span>
+      <span><a href="/post">Post</a></span>
+      <span><a href="/logout">Logout</a></span>
+      <% } else { %>
+      <span><a href="/reg">Register</a></span>
+  		<span><a href="/login">Login</a></span>
+      <% } %>
+      <span><a href="/links">Links</a></span>
+      <div>
+          <h3>搜索</h3>
+          <form action="/search">
+              <input type="text" maxlength="10" name="keyword" placeholder="请输入搜索内容">
+              <input type="submit" value="搜索">
+          </form>
+      </div>
 	</nav>
 	<article>
 

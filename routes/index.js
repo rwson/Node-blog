@@ -6,7 +6,6 @@ var crypto = require('crypto'),
 
 module.exports = function (app) {
 
-
     app.get('/', function (req, res) {
         var page = req.query.p ? parseInt(req.query.p) : 1;
         //  判断是否为第一个,并且把请求的页码转换成数字类型
@@ -132,6 +131,7 @@ module.exports = function (app) {
 
     app.get('/post', _checkLogin);
     app.get('/post', function (req, res) {
+
         res.render('post', {
             'title': '发表',
             'user': req.session.user,
@@ -146,7 +146,7 @@ module.exports = function (app) {
         var currentUser = req.session.user,
             tags = [req.body.tag1,req.body.tag2,req.body.tag3],
         //  标签    
-            post = new Post(currentUser.name, req.body.title, tags,req.body.content);
+            post = new Post(currentUser.name, currentUser.head,req.body.title, tags,req.body.content);
         //  实例化post对象
 
         post.save(function (err) {
@@ -206,10 +206,6 @@ module.exports = function (app) {
             }
             //  查询失败
 
-            console.log("---------文章列表---------");
-            console.log(posts);
-            console.log("---------文章列表---------");
-
             res.render('acrhive',{
                 'title':'存档',
                 'posts':posts,
@@ -264,6 +260,39 @@ module.exports = function (app) {
         });
     });
     //  指定标签
+
+    app.get('/search',function(req,res){
+        Post.search(req.query.keyword,function(err,posts){
+            //  从数据库中取得记录
+
+            if(err){
+                req.flash('error',err);
+                return res.redirect('/');
+            }
+            //  搜索失败
+
+            res.render('search',{
+                'title':req.query.keyword + "的搜索结果",
+                'user':req.session.user,
+                'posts':posts,
+                'keyword':req.query.keyword,
+                'success':req.flash('success').toString(),
+                'error':req.flash('error').toString()
+            });
+
+        });
+    });
+    //  搜索
+
+    app.get('/links',function(req,res){
+        res.render('links',{
+            'title':'友情链接',
+            'user':req.session.user,
+            'success':req.flash('success').toString(),
+            'error':req.flash('error').toString()
+        });
+    });
+    //  友情链接
 
     app.get('/u/:name', function (req, res) {
         var page = req.query.p ? parseInt(req.query.p) : 1;
@@ -332,8 +361,12 @@ module.exports = function (app) {
         var date = new Date(),
             time = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " "
                 + date.getHours() + ":" + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()),
+            md5 = crypto.createHash('md5'),
+            emailMd5 = md5.update(req.body.email.toLowerCase()).digest('hex'),
+            head = 'http://zh-tw.gravatar.com/avatar' + emailMd5 + '?s=48',
             comment = {
                 'name': req.body.name,
+                'head':head,
                 'email': req.body.email,
                 'website': req.body.website,
                 'time': time,
@@ -410,7 +443,6 @@ module.exports = function (app) {
             }
             //	保存失败,返回之前的文章页
 
-
             console.log("保存成功!");
             req.flash('success', '保存成功!');
             res.redirect(url);
@@ -446,6 +478,11 @@ module.exports = function (app) {
         res.redirect('/');
     });
     //	登出
+
+    app.use(function(req,res){
+        res.render('404');
+    });
+    //  404页
 
 }
 

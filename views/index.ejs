@@ -2,7 +2,10 @@
 	<% if(posts.length > 0){ %>
 		<% posts.forEach(function(post,index){ %>
 			<div class="post-contents">
-				<h2><a href="/u/<%= post.name %>/<%= post.time.day %>/<%= post.title %>"><%= post.title %></a></h2>
+				<h2>
+					<a href="/u/<%= post.name %>/<%= post.time.day %>/<%= post.title %>"><%= post.title %></a>
+					<a href="/u/<%= post.name %>"><img src="<%= post.head %>" alt="头像"></a>
+				</h2>
 				<p>
 					作者:<a href="/u/<%= post.name %>"><%= post.name %></a>| 
 					日期:<%= post.time.minutes %>
@@ -18,6 +21,7 @@
 					</p>
 				<% } %>	
 				<p><%- post.post %></p>
+				<p class="info">阅读:<%= post.pv %> | 评论:<%= post.comments.length %></p>
 			</div>
 		<% }) %>
 	<% } else { %>
