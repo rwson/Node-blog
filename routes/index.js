@@ -2,7 +2,9 @@ var crypto = require('crypto'),
     User = require('../modles/user.js'),
     Post = require('../modles/post.js'),
     Comment = require('../modles/comment.js'),
-    fs = require('fs');
+    avatarDir = require('../settings.js').avatarDir,
+    fs = require('fs'),
+    avatarArr = [];
 
 module.exports = function (app) {
 
@@ -335,6 +337,22 @@ module.exports = function (app) {
     });
     //	用户详情
 
+    app.get('/usercenter/:name',function(req,res){
+        if(avatarArr.length == 0){
+            avatarArr = _rendFileList(fs,avatarDir);
+        }
+        //  如果文件数组为空,就先读取待选头像下的文件列表
+
+        res.render('usercenter',{
+            'title': '个人中心',
+            'avators': avatarArr,
+            'user': req.session.user,
+            'success': req.flash('success').toString(),
+            'error': req.flash('error').toString()
+        });
+
+    });
+
     app.get('/u/:name/:day/:title', function (req, res) {
         Post.getOne(req.params.name, req.params.day, req.params.title, function (err, post) {
             //	从数据库查询一条记录
@@ -542,6 +560,31 @@ module.exports = function (app) {
     });
     //  404页
 
+}
+
+/**
+ * 读取某个目录下的文件,并以数组的形式返回
+ * @param  {[type]} fs  [description]
+ * @param  {[type]} dir [description]
+ * @return {[type]}     [description]
+ */
+function _rendFileList(fs,dir){
+    var arr = [];
+    //  定义空数组用于返回
+    
+        fs.readdir(dir, function(err, files){
+        if(err){
+            console.log('error:\n' + err);
+            return;
+        }
+        //err 为错误,files文件名列表包含文件夹与文件
+
+        files.forEach(function(file){
+            arr.push(dir + file);
+        });
+    });
+
+    return arr;
 }
 
 /**

@@ -1,0 +1,10 @@
+<%- include header %>
+	<form method="post">
+		用户名:<input type="text" name="name" value="<%= user.name %>" disabled="disabled">
+		<br/>
+		邮箱:<input type="text" name="email" value="<%= user.email %>" disabled="disabled">
+		<br/>
+		头像
+		<img src="<%= user.head %>">
+	</form>
+<%- include footer%>

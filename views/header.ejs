@@ -16,6 +16,7 @@
       <%if (user){%>
       <span><a href="/upload">Upload</a></span>
       <span><a href="/post">Post</a></span>
+      <span><a href="/usercenter/<%= user.name %>">User Center</a></span>
       <span><a href="/logout">Logout</a></span>
       <% } else { %>
       <span><a href="/reg">Register</a></span>

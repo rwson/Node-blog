@@ -14,7 +14,6 @@ var express = require('express'),
 	accessLog = fs.createWriteStream('access.log',{'flags':'a'}),
 	errorLog = fs.createWriteStream('error.log',{'flags':'a'});
 
-// all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');

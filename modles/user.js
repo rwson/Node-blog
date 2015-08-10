@@ -3,7 +3,8 @@
  */
 
 var mongodb = require('./db'),
-    crypto = require('crypto');
+    crypto = require('crypto'),
+    avatarDir = require('../settings.js').avatarDir;
 
 /**
  * user类
@@ -106,6 +107,26 @@ User.get = function (name, callback) {
             });
 
         });
+
+    });
+};
+
+/**
+ * 更新某个用户的信息
+ * @param  {[type]}   name     [description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
+User.update = function(name,callback){
+    mongodb.open(function(err,db){
+        //  打开数据库
+
+        if(err){
+            return callback(err);
+        }
+        //  打开失败
+
+        
 
     });
 };
