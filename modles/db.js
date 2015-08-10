@@ -1,3 +1,7 @@
+/**
+ * 数据库相关设置
+ */
+
 var settings = require('../settings'),
     Db = require('mongodb').Db,
     Server = require('mongodb').Server;

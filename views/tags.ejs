@@ -1,7 +1,7 @@
 <%- include header %>
 	<% if(posts.length > 0){ %>
 		<% posts.forEach(function(tag,index){ %>
-			<a class="tag" href="/tag/<%= tag %>"><%= tag %></a>
+			<a class="tag" href="/tags/<%= tag %>"><%= tag %></a>
 		<% }) %>
 	<% } else { %>
 		<p>啊哦,暂时没有分类标签哦!

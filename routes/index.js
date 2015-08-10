@@ -115,13 +115,14 @@ module.exports = function (app) {
                 req.flash('error', '用户不存在！');
                 return res.redirect('/login');
             }
-
             //	用户不存在的情况
+            
             if (user.password != password) {
                 req.flash('error', '密码错误！');
                 return res.redirect('/login');
             }
             //	密码错误
+            
             req.session.user = user;
             req.flash('success', '登陆成功');
             res.redirect('/');
@@ -471,9 +472,8 @@ module.exports = function (app) {
     });
     //	删除指定的文章
 
-    app.get('/reprint/:name/:day/title',_checkLogin);
-    app.get('/reprint/:name/:day/title',function(req,res){
-
+    app.get('/reprint/:name/:day/:title',_checkLogin);
+    app.get('/reprint/:name/:day/:title',function(req,res){
         Post.edit(req.params.name,req.params.day,req.params.title,function(err,post){
             //  调用edit返回markdown格式的文本,而不是getOne返回的HTML字符串
 
@@ -498,7 +498,7 @@ module.exports = function (app) {
                 opt = [
                     {
                         "encode": true,
-                        "param": posts.name
+                        "param": post.name
                     },
                     {
                         "param": post.time.day
@@ -511,9 +511,9 @@ module.exports = function (app) {
                 url = '/u/' + _encodeUrl(opt);
                 //  组装url,调用_encodeUrl解决中文无法解析问题
 
-            Post.reprint(function(err,post){
+            Post.reprint(reprint_from,reprint_to,function(err,post){
                 //  调用转载方法
-
+                
                 if(err){
                     req.flash('error',err);
                     return res.redirect('back');
@@ -582,7 +582,6 @@ function _checkNotLogin(req, res, next) {
 function _encodeUrl(data) {
     var arr = [];
     data.forEach(function (item, index, array) {
-        console.log(item);
         arr.push(item["encode"] ? encodeURIComponent(item["param"]) : item["param"]);
         //	如果encode参数为true,就是需要编码,否则就不需要编码
     });

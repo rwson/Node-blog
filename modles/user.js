@@ -1,3 +1,7 @@
+/**
+ * 用户类操作相关
+ */
+
 var mongodb = require('./db'),
     crypto = require('crypto');
 

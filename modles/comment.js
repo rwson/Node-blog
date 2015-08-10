@@ -1,3 +1,7 @@
+/**
+ * 评论类
+ */
+
 var mongodb = require('./db');
 
 /**
