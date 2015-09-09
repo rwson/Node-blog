@@ -633,7 +633,7 @@ Post.search = function (keyword, callback) {
             }
             //  查询失败
 
-            var pattern = new RegExp("^.*" + keyword + ".$", "i");
+            var pattern = new RegExp("^.*" + keyword + ".*$", "i");
             //  组装搜索正则
 
             collection.find({
